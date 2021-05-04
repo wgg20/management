@@ -53,9 +53,26 @@ export default {
     //重置表单  但是表单内容不会清空  因为表单内的内容是双向绑定的 而是将input中的内容回归到默认值
     loginReset(){
       this.$refs.loginFormRef.resetFields()
-    },login(){
+    },
+    login(){
       //登录前对表单填写的信息进行验证，传入的是回调函数，如果表单填写符合要求返回值true，错误返回false
-      this.$refs.loginFormRef.validate((vali)=>{console.log(vali);})
+      this.$refs.loginFormRef.validate(async valid => {
+        //如果值为false返回值
+        if(!valid) return 
+        //{data:res}:解构赋值，将返回的data对象赋值给res
+        //‘login’是路径接口，this.loginForm是后面跟的参数
+        const {data:res} = await this.$http.post('login',this.loginForm)
+        if(res.meta.status != 200) return this.$message.error('信息错误，登录失败！')
+        this.$message.success('恭喜你，登录成功！')
+        // console.log(res);
+        //将登录成功之后的token，保存到客户端的sessionStorage中
+        //   1.1项目中除了登录外的其他API接口，必须在登陆后才能访问
+        //   1.2token只应该在当前网站打开期间生效，所以将token保存在seesionStorage中
+        window.sessionStorage.setItem('token',res.data.token)
+        //2.通过编程式导航跳转到后台主页，路由地址是/home
+        this.$router.push('/home')
+      })
+      
     }
   },
 };
