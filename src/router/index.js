@@ -3,9 +3,11 @@ import Router from 'vue-router';
 
 Vue.use(Router);
 
+// 路由懒加载
 const Login = () => import('../components/Login.vue');
 const Home = () => import('../components/Home.vue');
-
+const Welcome = () => import('../components/Welcome.vue');
+const User = () => import('../components/users/User.vue');
 //重写push方法，不然报错
 const routerPush = Router.prototype.push;
 Router.prototype.push = function push(location) {
@@ -24,6 +26,17 @@ const routes = [
   {
     path: '/home',
     component: Home,
+    redirect: '/welcome',
+    children: [
+      {
+        path: '/welcome',
+        component: Welcome,
+      },
+      {
+        path: '/users',
+        component: User,
+      },
+    ],
   },
 ];
 

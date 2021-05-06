@@ -17,6 +17,8 @@
           unique-opened
           :collapse="iscollapse"
           :collapse-transition="false"
+          router
+          :default-active="activePath"
         >
           <el-submenu
             :index="item.id + ''"
@@ -28,9 +30,10 @@
               <span>{{ item.authName }}</span>
             </template>
             <el-menu-item
-              :index="subitem.id + ''"
+              :index="subitem.path"
               v-for="subitem in item.children"
               :key="subitem.id"
+              @click="saveNavActive('/' + subitem.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -40,7 +43,7 @@
           </el-submenu>
         </el-menu>
       </el-aside>
-      <el-main>Main</el-main>
+      <el-main><router-view></router-view></el-main>
     </el-container>
   </el-container>
 </template>
@@ -61,10 +64,12 @@ export default {
         '145': 'icon-baobiao',
       },
       iscollapse: false,
+      activePath: '',
     };
   },
   created() {
     this.getMenuList();
+    this.activePath = window.sessionStorage.getItem('activepath');
   },
   methods: {
     loginOut() {
@@ -75,6 +80,10 @@ export default {
     },
     collapseClick() {
       this.iscollapse = !this.iscollapse;
+    },
+    saveNavActive(activePaths) {
+      window.sessionStorage.setItem('activepath', activePaths);
+      this.activePath = activePaths;
     },
     async getMenuList() {
       //请求左边菜单栏数据
