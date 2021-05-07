@@ -22,7 +22,7 @@
           </el-input>
         </el-col>
         <el-col :span="4"
-          ><el-button type="primary" @click="addDialogVisible = 'true'"
+          ><el-button type="primary" @click="addDialogVisible = true"
             >添加用户</el-button
           ></el-col
         >
@@ -57,6 +57,7 @@
                 type="primary"
                 icon="el-icon-edit"
                 size="min"
+                @click="showEditDialogVisible(scope.row.id)"
               ></el-button>
             </el-tooltip>
             <el-tooltip
@@ -103,7 +104,7 @@
       title="添加用户"
       :visible.sync="addDialogVisible"
       width="30%"
-      :before-close="handleClose"
+      @close="resetForm"
     >
       <el-form
         :model="ruleForm"
@@ -126,9 +127,35 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addUsers">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 修改用户信息的弹窗 -->
+    <el-dialog
+      title="修改用户信息"
+      :visible.sync="editDialogVisible"
+      width="30%"
+      @close="editFormClose"
+    >
+      <el-form
+        :model="editForm"
+        :rules="editRules"
+        ref="editFormRef"
+        label-width="100px"
+      >
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editForm.email" prop="email"></el-input>
+        </el-form-item>
+        <el-form-item label="电话">
+          <el-input v-model="editForm.mobile" prop="mobile"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUsers">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -168,6 +195,8 @@ export default {
       total: 0,
       // 控制是否显示对话框
       addDialogVisible: false,
+      // 控制修改用户信息弹窗是否显示
+      editDialogVisible: false,
       ruleForm: {
         username: '',
         password: '',
@@ -189,6 +218,19 @@ export default {
             trigger: 'blur',
           },
         ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validator: cheakEmail, trigger: 'blur' },
+        ],
+        mobile: [
+          { required: true, message: '请输入电话号码', trigger: 'blur' },
+          { validator: cheakMobile, trigger: 'blur' },
+        ],
+      },
+      // 用户查询到的信息对象
+      editForm: {},
+      // 用户修改字段原则
+      editRules: {
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
           { validator: cheakEmail, trigger: 'blur' },
@@ -224,6 +266,10 @@ export default {
       // this.queryInfo.pagenum = 1;
       this.getuserList();
     },
+    resetForm() {
+      // 修改表单
+      this.$refs.ruleFormRef.resetFields();
+    },
     // 修改用户状态，并将它保存到数据库中
     async swichStateChanged(stateInfo) {
       const { data: res } = await this.$http.put(
@@ -235,6 +281,58 @@ export default {
         return this.$message.error('用户状态更新失败！');
       }
       this.$message.success('用户状态更新成功！');
+    },
+    //添加用户信息并保存到数据库
+    addUsers() {
+      this.$refs.ruleFormRef.validate(async (valid) => {
+        //如果表单为空或者有误则return出去
+        if (!valid) return;
+        const { data: res } = await this.$http.post('users', this.ruleForm);
+        if (res.meta.status != 201) {
+          this.$message.error('添加用户失败！');
+        }
+        this.$message.success('添加用户成功！');
+        // 隐藏用户对话框
+        this.addDialogVisible = false;
+        // 重新获取用户数据
+        this.getuserList();
+      });
+    },
+    async showEditDialogVisible(id) {
+      // 使用id参数获取用户信息
+      const { data: res } = await this.$http.get('users/' + id);
+      if (res.meta.status !== 200) {
+        return this.$message.error('用户信息修改失败！');
+      }
+      this.editForm = res.data;
+      this.editDialogVisible = true;
+      console.log(res.data);
+    },
+    // 重置修改用户信息表单
+    editFormClose() {
+      this.$refs.editFormRef.resetFields();
+    },
+    //修改信息并保存到数据库中
+    editUsers() {
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return;
+        const { data: res } = await this.$http.put(
+          'users/' + this.editForm.id,
+          {
+            email: this.editForm.email,
+            mobile: this.editForm.mobile,
+          }
+        );
+        if (res.meta.status !== 200) {
+          return this.$message.error('用户信息修改失败！');
+        }
+        // 关闭弹窗
+        this.editDialogVisible = false;
+        // 重新请求数据
+        this.getuserList();
+        // 提示成功
+        this.$message.success('用户信息修改成功！');
+      });
     },
   },
 };
@@ -249,5 +347,8 @@ export default {
 }
 .el-pagination {
   margin-top: 15px;
+}
+.el-form {
+  margin-left: -30px;
 }
 </style>
