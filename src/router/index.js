@@ -8,6 +8,9 @@ const Login = () => import('../components/Login.vue');
 const Home = () => import('../components/Home.vue');
 const Welcome = () => import('../components/Welcome.vue');
 const User = () => import('../components/users/User.vue');
+const Rights = () => import('../components/power/Rights.vue');
+const Roles = () => import('../components/power/Roles.vue');
+
 //重写push方法，不然报错
 const routerPush = Router.prototype.push;
 Router.prototype.push = function push(location) {
@@ -35,6 +38,14 @@ const routes = [
       {
         path: '/users',
         component: User,
+      },
+      {
+        path: '/rights',
+        component: Rights,
+      },
+      {
+        path: '/roles',
+        component: Roles,
       },
     ],
   },

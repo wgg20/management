@@ -9,7 +9,9 @@ import axios from 'axios'; //引入axios
 
 Vue.use(ElementUI);
 //给element-ui的message组件增加一个原型
-Vue.prototype.$message = ElementUI.Message;
+// Vue.prototype.$message = ElementUI.Message;
+//给element-ui的confirm组件增加一个原型
+// Vue.prototype.$confirm = ElementUI.MessageBox;
 //配置根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/';
 //将axios挂载到vue原型中
