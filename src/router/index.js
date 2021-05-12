@@ -10,6 +10,7 @@ const Welcome = () => import('../components/Welcome.vue');
 const User = () => import('../components/users/User.vue');
 const Rights = () => import('../components/power/Rights.vue');
 const Roles = () => import('../components/power/Roles.vue');
+const Categories = () => import('../components/goods/Categories.vue');
 
 //重写push方法，不然报错
 const routerPush = Router.prototype.push;
@@ -46,6 +47,10 @@ const routes = [
       {
         path: '/roles',
         component: Roles,
+      },
+      {
+        path: '/categories',
+        component: Categories,
       },
     ],
   },
