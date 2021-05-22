@@ -37,10 +37,19 @@
         </template>
         <!-- 操作 -->
         <template slot="operation" slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" size="mini"
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
+            size="mini"
+            @click="showCateChanged(scope.row.cat_id)"
             >编辑</el-button
           >
-          <el-button type="danger" icon="el-icon-delete" size="mini"
+          <!-- <pre>{{ scope.row }}</pre> -->
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            size="mini"
+            @click="deleteCate(scope.row.cat_id)"
             >删除</el-button
           >
         </template>
@@ -91,6 +100,27 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addCateList">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 修改分类信息对话框 -->
+    <el-dialog
+      title="修改分类信息"
+      :visible.sync="editDialogVisible"
+      width="50%"
+    >
+      <el-form
+        :model="editForm"
+        :rules="editRules"
+        ref="editFormRef"
+        label-width="100px"
+      >
+        <el-form-item label="分类名称" prop="cat_name">
+          <el-input v-model="editForm.cat_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editCate">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -159,6 +189,24 @@ export default {
       },
       // 选中的分类Id数组
       selectedKeys: [],
+      // 编辑对话框的显示与否
+      editDialogVisible: false,
+      // 修改查询对象
+      editForm: {},
+      // 验证规则
+      editRules: {
+        cat_name: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 2, max: 10, message: '长度在 2到 10 个字符', trigger: 'blur' },
+        ],
+      },
+      // 查询到的分类信息对象
+      editForm: {
+        cat_id: 0,
+        cat_name: '',
+        cat_pid: 0,
+        cat_level: 0,
+      },
     };
   },
   created() {
@@ -246,6 +294,63 @@ export default {
         this.getCateList();
         this.addDialogVisible = false;
       });
+    },
+    // 根据id查询查询分类
+    async showCateChanged(id) {
+      const { data: res } = await this.$http.get('categories/' + id);
+      if (res.meta.status != 200) {
+        return this.$message.error('分类修改失败');
+      }
+      this.editForm = res.data;
+      this.editDialogVisible = true;
+      console.log(res.data);
+    },
+    // 将修改完的数据同步到数据库中
+    editCate() {
+      // 先验证表单有没有通过
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return;
+        const { data: res } = await this.$http.put(
+          'categories/' + this.editForm.cat_id,
+          {
+            cat_name: this.editForm.cat_name,
+          }
+        );
+        if (res.meta.status != 200) {
+          return this.$message.error('修改分类失败！');
+        }
+        // 关闭弹窗
+        this.editDialogVisible = false;
+        // 重新请求数据
+        this.getCateList();
+        // 提示成功
+        this.$message.success('用户信息修改成功！');
+        // console.log('----' + this.cheakEmail.rule);
+      });
+    },
+    // 删除分类信息
+    async deleteCate(id) {
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该用户, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      ).catch((err) => err);
+      // 如果点击确定则立即删除，如果是取消则弹出提示框
+      if (confirmResult != 'confirm') {
+        return this.$message.info('操作取消成功！');
+      }
+      const { data: res } = await this.$http.delete('categories/' + id);
+      if (res.meta.status != 200) {
+        return this.$$message.error('删除分类失败！');
+      }
+      this.$message.success('删除分类成功！');
+      // 重新获取数据
+      this.getCateList();
+      // this.cateList = res.data;
     },
   },
 };

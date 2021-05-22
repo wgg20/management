@@ -11,6 +11,7 @@ const User = () => import('../components/users/User.vue');
 const Rights = () => import('../components/power/Rights.vue');
 const Roles = () => import('../components/power/Roles.vue');
 const Categories = () => import('../components/goods/Categories.vue');
+const Params = () => import('../components/goods/Params.vue');
 
 //重写push方法，不然报错
 const routerPush = Router.prototype.push;
@@ -51,6 +52,10 @@ const routes = [
       {
         path: '/categories',
         component: Categories,
+      },
+      {
+        path: '/params',
+        component: Params,
       },
     ],
   },

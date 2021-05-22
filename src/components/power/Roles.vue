@@ -274,7 +274,7 @@ export default {
       // 获取单个用户数据并进行删除
       const { data: res } = await this.$http.delete('roles/' + id);
       if (res.meta.status != 200) {
-        this.$message.error('删除角色失败！');
+        return this.$message.error('删除角色失败！');
       }
       this.$message.success('删除角色成功！');
       //再次获取新的数据列表
@@ -322,9 +322,12 @@ export default {
     // 通过递归形式，获取当前节点下的所有角色三级权限的id
     getkeysId(node, arr) {
       // 判断是否处在三级节点
+      // console.log('----');
+      // console.log(node.children);
       if (!node.children) {
         return arr.push(node.id);
       }
+      // debugger;
       // 不处在三级节点采用递归
       node.children.forEach((item) => {
         this.getkeysId(item, arr);
@@ -343,11 +346,12 @@ export default {
       ];
       // 将数组以'，'分割，作为请求路径的参数
       const keyDir = keys.join(',');
-      const {
-        data: res,
-      } = await this.$http.post(`roles/${this.rolesId}/rights`, {
-        rids: keyDir,
-      });
+      const { data: res } = await this.$http.post(
+        `roles/${this.rolesId}/rights`,
+        {
+          rids: keyDir,
+        }
+      );
       if (res.meta.status != 200) {
         return this.$message.error('添加权限失败！');
       }
