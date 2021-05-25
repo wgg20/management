@@ -18,6 +18,19 @@ Vue.use(ElementUI);
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/';
 //将axios挂载到vue原型中
 Vue.prototype.$http = axios;
+// 全局定义一个时间过滤器
+Vue.filter('dateForm', function(originDate) {
+  const dt = new Date(originDate * 1000);
+  const y = dt.getFullYear();
+  const m = (dt.getMonth() + 1 + '').padStart(2, '0');
+  const d = (dt.getDate() + '').padStart(2, '0');
+
+  const hh = (dt.getHours() + '').padStart(2, '0');
+  const mm = (dt.getMinutes() + '').padStart(2, '0');
+  const ss = (dt.getSeconds() + '').padStart(2, '0');
+
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+});
 //请求数据
 axios.interceptors.request.use((config) => {
   config.headers.Authorization = window.sessionStorage.getItem('token');
