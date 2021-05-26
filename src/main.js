@@ -7,8 +7,15 @@ import 'element-ui/lib/theme-chalk/index.css'; // 导入 css
 import './assets/fonts/iconfont.css'; //导入字符图标文件
 import axios from 'axios'; //引入axios
 import zkTable from 'vue-table-with-tree-grid';
+import VueQuillEditor from 'vue-quill-editor'; //引入富文本编辑插件
+// 引入插件样式文件
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
 
 Vue.component('zk-table', zkTable);
+// 全局注册组件
+Vue.use(VueQuillEditor);
 Vue.use(ElementUI);
 //给element-ui的message组件增加一个原型
 // Vue.prototype.$message = ElementUI.Message;

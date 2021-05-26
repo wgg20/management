@@ -111,7 +111,16 @@
             </el-upload>
           </el-tab-pane>
 
-          <el-tab-pane label="商品内容" name="4"></el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本应用 -->
+            <quill-editor
+              ref="myQuillEditor"
+              v-model="addRuleForm.goods_introduce"
+            />
+            <el-button type="primary" @click="addGoods" class="addBtn"
+              >添加商品</el-button
+            >
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
@@ -123,6 +132,7 @@
 </template>
 
 <script>
+import _ from 'lodash';
 export default {
   name: 'Add',
   props: {},
@@ -140,6 +150,9 @@ export default {
         goods_cat: [],
         // 用于存放服务器返回的图片路径
         pics: [],
+        // 富文本的文本存储
+        goods_introduce: '',
+        attrs: [],
       },
       // 表单校验规则
       addRules: {
@@ -308,6 +321,45 @@ export default {
       this.addRuleForm.pics.splice(i, 1);
       console.log(this.addRuleForm);
     },
+    addGoods() {
+      // console.log(this.addRuleForm);
+      // 验证表单
+      this.$refs.ruleFormRef.validate(async (valid) => {
+        if (!valid) return this.$message.error('请填写必要表单选项');
+        // 表单验证成功后的操作
+        // 在发起数据请求前先得把addRuleForm中的goods_cat转为对象字符串形式
+        // 并且不能影响之前的goods_cat的使用，所以得拷贝出一个
+        const newForm = _.cloneDeep(this.addRuleForm);
+        newForm.goods_cat = newForm.goods_cat.join(',');
+        // console.log(newForm);
+        // 处理动态参数和静态属性
+        this.manyData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals.join(','),
+          };
+          this.addRuleForm.attrs.push(newInfo);
+        });
+        // 处理静态属性
+        this.onlyData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals,
+          };
+          this.addRuleForm.attrs.push(newInfo);
+        });
+        newForm.attrs = this.addRuleForm.attrs;
+        // console.log(newForm);
+        // 发起添加商品的数据请求
+        const { data: res } = await this.$http.post('goods', newForm);
+        if (res.meta.status != 201) {
+          return this.$message.error('添加商品失败!');
+        }
+        this.$message.success('添加商品成功');
+        // 跳转到商品页
+        this.$router.push('/goods');
+      });
+    },
   },
 };
 </script>
@@ -325,5 +377,8 @@ export default {
 }
 .pre_img {
   width: 100%;
+}
+.addBtn {
+  margin-top: 15px;
 }
 </style>
